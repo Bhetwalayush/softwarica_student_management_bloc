@@ -1,19 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
+import 'package:multi_select_flutter/util/multi_select_list_type.dart';
 import 'package:softwarica_student_management_bloc/features/auth/presentation/view_model/signup/register_bloc.dart';
+import 'package:softwarica_student_management_bloc/features/batch/domain/entity/batch_entity.dart';
+import 'package:softwarica_student_management_bloc/features/batch/presentation/view_model/batch_bloc.dart';
+import 'package:softwarica_student_management_bloc/features/course/domain/entity/course_entity.dart';
+import 'package:softwarica_student_management_bloc/features/course/presentation/view_model/course_bloc.dart';
 
-class RegisterView extends StatelessWidget {
-  RegisterView({super.key});
+class RegisterView extends StatefulWidget {
+  const RegisterView({super.key});
 
+  @override
+  State<RegisterView> createState() => _RegisterViewState();
+}
+
+class _RegisterViewState extends State<RegisterView> {
   final _gap = const SizedBox(height: 8);
-
   final _key = GlobalKey<FormState>();
-
   final _fnameController = TextEditingController(text: 'kiran');
   final _lnameController = TextEditingController(text: 'rana');
   final _phoneController = TextEditingController(text: '123456789');
   final _usernameController = TextEditingController(text: 'kiran');
   final _passwordController = TextEditingController(text: 'kiran123');
+
+  BatchEntity? _dropDownValue;
+  final List<CourseEntity> _lstCourseSelected = [];
 
   @override
   Widget build(BuildContext context) {
@@ -123,81 +136,70 @@ class RegisterView extends StatelessWidget {
                     }),
                   ),
                   _gap,
-                  // if (batchState.isLoading) ...{
-                  //   const Center(
-                  //     child: CircularProgressIndicator(),
-                  //   )
-                  // } else if (batchState.error != null) ...{
-                  //   Center(
-                  //     child: Text(batchState.error!),
-                  //   )
-                  // } else ...{
-                  //   DropdownButtonFormField<BatchEntity>(
-                  //     items: batchState.lstBatches
-                  //         .map((e) => DropdownMenuItem<BatchEntity>(
-                  //               value: e,
-                  //               child: Text(e.batchName),
-                  //             ))
-                  //         .toList(),
-                  //     onChanged: (value) {
-                  //       _dropDownValue = value;
-                  //     },
-                  //     value: _dropDownValue,
-                  //     decoration: const InputDecoration(
-                  //       labelText: 'Select Batch',
-                  //     ),
-                  //     validator: ((value) {
-                  //       if (value == null) {
-                  //         return 'Please select batch';
-                  //       }
-                  //       return null;
-                  //     }),
-                  //   ),
-                  // },
+                  BlocBuilder<BatchBloc, BatchState>(builder: (context, state) {
+                    return DropdownButtonFormField<BatchEntity>(
+                      items: state.batches
+                          .map((e) => DropdownMenuItem<BatchEntity>(
+                                value: e,
+                                child: Text(e.batchName),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        _dropDownValue = value;
+                      },
+                      value: _dropDownValue,
+                      decoration: const InputDecoration(
+                        labelText: 'Select Batch',
+                      ),
+                      validator: ((value) {
+                        if (value == null) {
+                          return 'Please select batch';
+                        }
+                        return null;
+                      }),
+                    );
+                  }),
                   _gap,
-                  // if (courseState.isLoading) ...{
-                  //   const Center(
-                  //     child: CircularProgressIndicator(),
-                  //   )
-                  // } else if (courseState.error != null) ...{
-                  //   Center(
-                  //     child: Text(courseState.error!),
-                  //   )
-                  // } else ...{
-                  //   MultiSelectDialogField(
-                  //     title: const Text('Select course'),
-                  //     items: courseState.lstCourses
-                  //         .map(
-                  //           (course) => MultiSelectItem(
-                  //             course,
-                  //             course.courseName,
-                  //           ),
-                  //         )
-                  //         .toList(),
-                  //     listType: MultiSelectListType.CHIP,
-                  //     buttonText: const Text(
-                  //       'Select course',
-                  //       style: TextStyle(color: Colors.black),
-                  //     ),
-                  //     buttonIcon: const Icon(Icons.search),
-                  //     onConfirm: (values) {
-                  //       _lstCourseSelected.clear();
-                  //       _lstCourseSelected.addAll(values);
-                  //     },
-                  //     decoration: BoxDecoration(
-                  //       border: Border.all(
-                  //         color: Colors.black87,
-                  //       ),
-                  //       borderRadius: BorderRadius.circular(5),
-                  //     ),
-                  //     validator: ((value) {
-                  //       if (value == null || value.isEmpty) {
-                  //         return 'Please select courses';
-                  //       }
-                  //       return null;
-                  //     }),
-                  //   ),
-                  // },
+                  BlocBuilder<CourseBloc, CourseState>(
+                      builder: (context, courseState) {
+                    if (courseState.isLoading) {
+                      return const CircularProgressIndicator();
+                    } else {
+                      return MultiSelectDialogField(
+                        title: const Text('Select course'),
+                        items: courseState.courses
+                            .map(
+                              (course) => MultiSelectItem(
+                                course,
+                                course.courseName,
+                              ),
+                            )
+                            .toList(),
+                        listType: MultiSelectListType.CHIP,
+                        buttonText: const Text(
+                          'Select course',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        buttonIcon: const Icon(Icons.search),
+                        onConfirm: (values) {
+                          _lstCourseSelected.clear();
+                          _lstCourseSelected.addAll(values);
+                        },
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.black87,
+                          ),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        validator: ((value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select courses';
+                          }
+                          return null;
+                        }),
+                      );
+                    }
+                  }),
                   _gap,
                   TextFormField(
                     controller: _usernameController,
@@ -230,7 +232,20 @@ class RegisterView extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        if (_key.currentState!.validate()) {}
+                        if (_key.currentState!.validate()) {
+                          context.read<RegisterBloc>().add(
+                                RegisterStudent(
+                                  context: context,
+                                  fName: _fnameController.text,
+                                  lName: _lnameController.text,
+                                  phone: _phoneController.text,
+                                  batch: _dropDownValue!,
+                                  courses: _lstCourseSelected,
+                                  username: _usernameController.text,
+                                  password: _passwordController.text,
+                                ),
+                              );
+                        }
                       },
                       child: const Text('Register'),
                     ),

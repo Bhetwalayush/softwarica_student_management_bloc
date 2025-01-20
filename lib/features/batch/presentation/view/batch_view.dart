@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:softwarica_student_management_bloc/core/common/snackbar/my_snackbar.dart';
 import 'package:softwarica_student_management_bloc/features/batch/presentation/view_model/batch_bloc.dart';
 
 class BatchView extends StatelessWidget {
@@ -35,21 +36,47 @@ class BatchView extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   if (_batchViewFormKey.currentState!.validate()) {
-                    // BlocProvider.of<BatchBloc>(context).add(
-                    //   AddBatch(
-                    //     BatchEntity(
-                    //       batchName: batchNameController.text.trim(),
-                    //     ),
-                    //   ),
-                    // );
+                    context.read<BatchBloc>().add(
+                          AddBatch(batchNameController.text),
+                        );
                   }
                 },
-                child: BlocBuilder<BatchBloc, BatchState>(
-                  builder: (context, state) {
-                    return Text('Add Batch');
-                  },
-                ),
+                child: Text('Add Batch'),
               ),
+              SizedBox(height: 10),
+              BlocBuilder<BatchBloc, BatchState>(builder: (context, state) {
+                if (state.batches.isEmpty) {
+                  return Center(child: Text('No Batches Added Yet'));
+                } else if (state.isLoading) {
+                  return CircularProgressIndicator();
+                } else if (state.error != null) {
+                  return showMySnackBar(
+                    context: context,
+                    message: state.error!,
+                    color: Colors.red,
+                  );
+                } else {
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: state.batches.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(state.batches[index].batchName),
+                          subtitle: Text(state.batches[index].batchId!),
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () {
+                              context.read<BatchBloc>().add(
+                                    DeleteBatch(state.batches[index].batchId!),
+                                  );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                }
+              })
             ],
           ),
         ),

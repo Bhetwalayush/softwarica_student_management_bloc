@@ -26,7 +26,7 @@ class HomeView extends StatelessWidget {
                 color: Colors.red,
               );
 
-              //   context.read<HomeCubit>().logout();
+                context.read<HomeCubit>().logout(context);
             },
           ),
           Switch(

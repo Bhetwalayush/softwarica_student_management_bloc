@@ -1,6 +1,5 @@
 part of 'batch_bloc.dart';
 
-
 class BatchState extends Equatable {
   final List<BatchEntity> batches;
   final bool isLoading;
